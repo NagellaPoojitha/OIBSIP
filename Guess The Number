@@ -1,0 +1,72 @@
+import java.util.Random;
+import java.util.Scanner;
+
+public class GuessTheNumber {
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        Random random = new Random();
+
+        System.out.println("Welcome to the Guess the Number Game!");
+        System.out.println("Try to guess the number I'm thinking of, between 1 and 100.");
+        System.out.println("You can quit anytime by typing 'exit'. Let's start!");
+
+        boolean playAgain = true;
+        int round = 0;
+        int totalScore = 0;
+
+        while (playAgain) {
+            round++;
+            int numberToGuess = random.nextInt(100) + 1;
+            int attempts = 0;
+            int maxAttempts = 10; // Set a limit for maximum attempts
+            boolean guessed = false;
+
+            System.out.println("\nRound " + round + " - You have " + maxAttempts + " attempts to guess the number!");
+
+            while (!guessed && attempts < maxAttempts) {
+                System.out.print("Enter your guess: ");
+                String input = scanner.nextLine();
+
+                // Allow user to exit
+                if (input.equalsIgnoreCase("exit")) {
+                    System.out.println("Thanks for playing! Your total score is: " + totalScore);
+                    return;
+                }
+
+                try {
+                    int userGuess = Integer.parseInt(input);
+                    attempts++;
+
+                    if (userGuess == numberToGuess) {
+                        guessed = true;
+                        int points = maxAttempts - attempts + 1; // More points for fewer attempts
+                        totalScore += points;
+                        System.out.println("Congratulations! You've guessed the number in " + attempts + " attempts.");
+                        System.out.println("You earned " + points + " points. Total Score: " + totalScore);
+                    } else if (userGuess < numberToGuess) {
+                        System.out.println("Too low! Try again.");
+                    } else {
+                        System.out.println("Too high! Try again.");
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.println("Invalid input. Please enter a number between 1 and 100.");
+                }
+            }
+
+            if (!guessed) {
+                System.out.println("Sorry, you've used all your attempts! The number was: " + numberToGuess);
+            }
+
+            // Ask to play another round
+            System.out.print("\nDo you want to play another round? (yes/no): ");
+            String response = scanner.nextLine();
+            if (!response.equalsIgnoreCase("yes")) {
+                playAgain = false;
+                System.out.println("Thanks for playing! Your total score is: " + totalScore);
+            }
+        }
+
+        scanner.close();
+    }
+}
