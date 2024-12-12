@@ -1,0 +1,168 @@
+import java.util.HashMap;
+import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
+
+public class OnlineQuizSystem {
+
+    static class User {
+        String username;
+        String password;
+        String profileInfo;
+
+        public User(String username, String password, String profileInfo) {
+            this.username = username;
+            this.password = password;
+            this.profileInfo = profileInfo;
+        }
+
+        public boolean validatePassword(String password) {
+            return this.password.equals(password);
+        }
+
+        public void updateProfile(String newInfo) {
+            this.profileInfo = newInfo;
+        }
+
+        public void updatePassword(String newPassword) {
+            this.password = newPassword;
+        }
+
+        public String getProfileInfo() {
+            return profileInfo;
+        }
+    }
+
+    private static final HashMap<String, User> userDatabase = new HashMap<>();
+    private static final HashMap<Integer, String[]> quizQuestions = new HashMap<>();
+    private static final HashMap<Integer, String> correctAnswers = new HashMap<>();
+
+    static {
+        // Add a demo user
+        userDatabase.put("user1", new User("user1", "password1", "Demo User Profile"));
+
+        // Add quiz questions
+        quizQuestions.put(1, new String[]{"What is the capital of France?", "1. Berlin", "2. Madrid", "3. Paris", "4. Rome"});
+        correctAnswers.put(1, "3");
+
+        quizQuestions.put(2, new String[]{"What is 5 + 3?", "1. 6", "2. 8", "3. 7", "4. 9"});
+        correctAnswers.put(2, "2");
+    }
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.println("Welcome to the Online Quiz System!");
+
+        // Login
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+
+        if (!userDatabase.containsKey(username) || !userDatabase.get(username).validatePassword(password)) {
+            System.out.println("Invalid username or password. Exiting...");
+            return;
+        }
+
+        User loggedInUser = userDatabase.get(username);
+        System.out.println("Login successful! Welcome, " + username);
+
+        boolean exit = false;
+
+        while (!exit) {
+            System.out.println("\nMenu:");
+            System.out.println("1. View/Update Profile");
+            System.out.println("2. Update Password");
+            System.out.println("3. Take Quiz");
+            System.out.println("4. Logout");
+            System.out.print("Enter your choice: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    // View/Update Profile
+                    System.out.println("Profile Info: " + loggedInUser.getProfileInfo());
+                    System.out.print("Do you want to update your profile? (yes/no): ");
+                    if (scanner.nextLine().equalsIgnoreCase("yes")) {
+                        System.out.print("Enter new profile information: ");
+                        String newInfo = scanner.nextLine();
+                        loggedInUser.updateProfile(newInfo);
+                        System.out.println("Profile updated successfully!");
+                    }
+                    break;
+
+                case 2:
+                    // Update Password
+                    System.out.print("Enter current password: ");
+                    String currentPassword = scanner.nextLine();
+                    if (!loggedInUser.validatePassword(currentPassword)) {
+                        System.out.println("Incorrect password!");
+                    } else {
+                        System.out.print("Enter new password: ");
+                        String newPassword = scanner.nextLine();
+                        loggedInUser.updatePassword(newPassword);
+                        System.out.println("Password updated successfully!");
+                    }
+                    break;
+
+                case 3:
+                    // Take Quiz
+                    System.out.println("Quiz Instructions: Answer the following MCQs within the time limit.");
+                    takeQuiz(scanner);
+                    break;
+
+                case 4:
+                    // Logout
+                    System.out.println("Logged out successfully. Goodbye!");
+                    exit = true;
+                    break;
+
+                default:
+                    System.out.println("Invalid choice! Try again.");
+            }
+        }
+
+        scanner.close();
+    }
+
+    private static void takeQuiz(Scanner scanner) {
+        Timer timer = new Timer();
+        boolean[] timeUp = {false};
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                timeUp[0] = true;
+                System.out.println("\nTime's up! Submitting your answers automatically...");
+            }
+        }, 60 * 1000); // Set timer for 1 minute
+
+        int score = 0;
+        for (int i = 1; i <= quizQuestions.size(); i++) {
+            if (timeUp[0]) {
+                break;
+            }
+
+            String[] question = quizQuestions.get(i);
+            System.out.println("\n" + question[0]);
+            for (int j = 1; j < question.length; j++) {
+                System.out.println(question[j]);
+            }
+
+            System.out.print("Enter your answer (1-4): ");
+            String answer = scanner.nextLine();
+
+            if (timeUp[0]) {
+                break;
+            }
+
+            if (answer.equals(correctAnswers.get(i))) {
+                score++;
+            }
+        }
+
+        timer.cancel();
+        System.out.println("\nQuiz completed! Your score: " + score + "/" + quizQuestions.size());
+    }
+}
